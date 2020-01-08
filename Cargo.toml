@@ -1,0 +1,43 @@
+[package]
+name = "rogu"
+version = "0.1.0"
+authors = ["Douman <douman@gmx.se>"]
+edition = "2018"
+description = "Simple logger library"
+license = "BSL-1.0"
+repository = "https://github.com/DoumanAsh/rogu"
+readme = "README.md"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "README.md"
+]
+
+[target.'cfg(not(any(all(target_arch = "wasm32", target_os = "unknown"), target_os = "android")))'.dependencies]
+libc = { version = "0.2", default-features = false }
+time = { version = "0.2", default-features = false, optional = true, features = ["std"] }
+
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+wasm-bindgen = { version = "0.2" }
+
+[dependencies]
+ufmt = "0.1"
+
+[features]
+std = ["ufmt/std", "time"]
+
+# Specifies which logging macros to eliminate at compile time in debug mode
+level_error_off = []
+level_warn_off  = []
+level_info_off  = []
+level_debug_off = []
+level_trace_off = []
+level_all_off   = ["level_trace_off", "level_debug_off", "level_info_off", "level_warn_off", "level_error_off"]
+
+# Specifies which logging macros to eliminate at compile time in release mode
+release_level_error_off = []
+release_level_warn_off  = []
+release_level_info_off  = []
+release_level_debug_off = []
+release_level_trace_off = []
+release_level_all_off   = ["release_level_trace_off", "release_level_debug_off", "release_level_info_off", "release_level_warn_off", "release_level_error_off"]
