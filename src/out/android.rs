@@ -86,6 +86,9 @@ impl ufmt::uWrite for Log {
     type Error = core::convert::Infallible;
 
     fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+        //Yeah, how about to not write so much actually?
+        debug_assert!(text.len() <= MSG_MAX_LEN);
+
         if MSG_MAX_LEN == self.len {
             self.flush();
         }

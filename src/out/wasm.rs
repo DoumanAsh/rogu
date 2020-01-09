@@ -78,7 +78,10 @@ impl ufmt::uWrite for Console {
     type Error = core::convert::Infallible;
 
     fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
-        if self.len == self.buffer.len() {
+        //Yeah, how about to not write so much actually?
+        debug_assert!(text.len() <= self.buffer.len());
+
+        if self.len == self.buffer.len() || self.len + text.len() > self.buffer.len() {
             self.flush();
         }
 
@@ -87,6 +90,7 @@ impl ufmt::uWrite for Console {
             ptr::copy_nonoverlapping(text.as_ptr(), self.buffer.as_mut_ptr().add(self.len), write_len);
         }
         self.len += write_len;
+
         if self.buffer[self.len - 1] == b'\n' {
             self.len -= 1;
             self.flush();
