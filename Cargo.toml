@@ -1,6 +1,6 @@
 [package]
 name = "rogu"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Douman <douman@gmx.se>"]
 edition = "2018"
 description = "Simple logger library"
@@ -25,7 +25,7 @@ version = "0.1"
 optional = true
 
 [features]
-std = ["ufmt/std", "time"]
+std = ["time"]
 
 # Specifies which logging macros to eliminate at compile time in debug mode
 level_error_off = []
