@@ -42,6 +42,9 @@ jobs:
     - name: Check no feature
       run: cargo check
 
+    - name: Check ufmt
+      run: cargo check --features ufmt
+
     - name: Check WASM
       run: |
         rustup target add wasm32-unknown-unknown
