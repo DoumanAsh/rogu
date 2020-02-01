@@ -80,12 +80,8 @@ impl Log {
 
         self.len = 0;
     }
-}
 
-impl ufmt::uWrite for Log {
-    type Error = core::convert::Infallible;
-
-    fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+    pub fn write_text(&mut self, text: &str) {
         //Yeah, how about to not write so much actually?
         debug_assert!(text.len() <= MSG_MAX_LEN);
 
@@ -102,6 +98,26 @@ impl ufmt::uWrite for Log {
         if self.buffer[self.len - 1] == b'\n' {
             self.flush();
         }
+    }
+}
+
+#[cfg(feature = "ufmt")]
+impl ufmt::uWrite for Log {
+    type Error = core::convert::Infallible;
+
+    #[inline]
+    fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+        self.write_text(text);
+
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "ufmt"))]
+impl core::fmt::Write for Log {
+    #[inline]
+    fn write_str(&mut self, text: &str) -> core::fmt::Result {
+        self.write_text(text);
 
         Ok(())
     }

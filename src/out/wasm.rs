@@ -72,12 +72,8 @@ impl Console {
         (self.fun)(text);
         self.len = 0;
     }
-}
 
-impl ufmt::uWrite for Console {
-    type Error = core::convert::Infallible;
-
-    fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+    pub fn write_text(&mut self, text: &str) {
         //Yeah, how about to not write so much actually?
         debug_assert!(text.len() <= self.buffer.len());
 
@@ -95,6 +91,26 @@ impl ufmt::uWrite for Console {
             self.len -= 1;
             self.flush();
         }
+    }
+}
+
+#[cfg(feature = "ufmt")]
+impl ufmt::uWrite for Console {
+    type Error = core::convert::Infallible;
+
+    #[inline]
+    fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+        self.write_text(text);
+
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "ufmt"))]
+impl core::fmt::Write for Console {
+    #[inline]
+    fn write_str(&mut self, text: &str) -> core::fmt::Result {
+        self.write_text(text);
 
         Ok(())
     }

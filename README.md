@@ -4,7 +4,9 @@
 [![Documentation](https://docs.rs/rogu/badge.svg)](https://docs.rs/crate/rogu/)
 [![Build](https://github.com/DoumanAsh/rogu/workflows/Rust/badge.svg)](https://github.com/DoumanAsh/rogu/actions?query=workflow%3ARust)
 
-Simple logger, which uses [ufmt](https://github.com/japaric/ufmt).
+Logging library, plain and simple.
+
+Simple logger.
 
 Minimal customization, builtin loggers:
 
@@ -14,8 +16,11 @@ Minimal customization, builtin loggers:
 
 ## Features
 
+Note: all features must be used in binary code, not in library
+
 #### Loggers
 
+- `ufmt` - Enables [ufmt](https://github.com/japaric/ufmt) traits instead of core's `fmt`.
 - `std` - Enables `std` usage, adding ability to use timestamps (not used in Web and Android)
 
 #### Compile time macros

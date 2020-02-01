@@ -1,7 +1,7 @@
 ///C stdlib baesd writer into stdout/stderr
 
 use crate::data;
-use core::{mem, ptr, cmp};
+use core::{mem, ptr};
 
 pub struct FdWriter {
     fd: u8,
@@ -83,12 +83,7 @@ impl FdWriter {
         self.len = 0;
     }
 
-}
-
-impl ufmt::uWrite for FdWriter {
-    type Error = core::convert::Infallible;
-
-    fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+    fn write_text(&mut self, text: &str) {
         //Yeah, how about to not write so much actually?
         debug_assert!(text.len() <= self.buffer().len());
 
@@ -96,7 +91,7 @@ impl ufmt::uWrite for FdWriter {
             self.flush();
         }
 
-        let write_len = cmp::min(self.buffer().len(), text.len());
+        let write_len = core::cmp::min(self.buffer().len(), text.len());
         unsafe {
             ptr::copy_nonoverlapping(text.as_ptr(), self.buffer_as_mut_ptr().add(self.len), write_len);
         }
@@ -105,6 +100,26 @@ impl ufmt::uWrite for FdWriter {
         if self.buffer()[self.len - 1] == b'\n' {
             self.flush();
         }
+    }
+}
+
+#[cfg(feature = "ufmt")]
+impl ufmt::uWrite for FdWriter {
+    type Error = core::convert::Infallible;
+
+    #[inline]
+    fn write_str(&mut self, text: &str) -> Result<(), Self::Error> {
+        self.write_text(text);
+
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "ufmt"))]
+impl core::fmt::Write for FdWriter {
+    #[inline]
+    fn write_str(&mut self, text: &str) -> core::fmt::Result {
+        self.write_text(text);
 
         Ok(())
     }

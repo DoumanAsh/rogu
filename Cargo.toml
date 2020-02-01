@@ -1,6 +1,6 @@
 [package]
 name = "rogu"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Douman <douman@gmx.se>"]
 edition = "2018"
 description = "Simple logger library"
@@ -20,8 +20,9 @@ time = { version = "0.2", default-features = false, optional = true, features = 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 wasm-bindgen = { version = "0.2" }
 
-[dependencies]
-ufmt = "0.1"
+[dependencies.ufmt]
+version = "0.1"
+optional = true
 
 [features]
 std = ["ufmt/std", "time"]
