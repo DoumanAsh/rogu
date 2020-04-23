@@ -1,6 +1,6 @@
 use core::{ptr, mem};
 
-const UTF8_OFFSET: u8 = 48;
+const UTF8_OFFSET: u8 = b'0';
 
 pub struct TimeDate([u8; 22]);
 
@@ -14,14 +14,14 @@ impl TimeDate {
 
 #[inline(always)]
 pub fn get() -> TimeDate {
-    let now = time::PrimitiveDateTime::now();
+    let now = time::OffsetDateTime::now();
     let mut result = TimeDate(unsafe { mem::MaybeUninit::uninit().assume_init() });
     unsafe {
         ptr::write(result.0.as_mut_ptr(), b'[');
 
         let mut num = now.year();
         for idx in (1..5).rev() {
-            ptr::write(result.0.as_mut_ptr().add(idx), num as u8 % 10 + UTF8_OFFSET);
+            ptr::write(result.0.as_mut_ptr().add(idx), (num % 10) as u8 + UTF8_OFFSET);
             num /= 10;
         }
 
