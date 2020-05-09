@@ -53,22 +53,27 @@ impl FdWriter {
         }
     }
 
+    #[inline(always)]
     pub fn error(location: &'static str) -> Self {
         Self::new(2, data::level::ERROR, location)
     }
 
+    #[inline(always)]
     pub fn warn(location: &'static str) -> Self {
         Self::new(2, data::level::WARN, location)
     }
 
+    #[inline(always)]
     pub fn info(location: &'static str) -> Self {
         Self::new(1, data::level::INFO, location)
     }
 
+    #[inline(always)]
     pub fn debug(location: &'static str) -> Self {
         Self::new(1, data::level::DEBUG, location)
     }
 
+    #[inline(always)]
     pub fn trace(location: &'static str) -> Self {
         Self::new(1, data::level::TRACE, location)
     }

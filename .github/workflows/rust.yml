@@ -56,4 +56,4 @@ jobs:
         cargo check --target aarch64-linux-android
 
     - name: Test
-      run: cargo test --features std
+      run: cargo test --features std,log

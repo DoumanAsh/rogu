@@ -22,6 +22,7 @@ Note: all features must be used in binary code, not in library
 
 - `ufmt` - Enables [ufmt](https://github.com/japaric/ufmt) traits instead of core's `fmt`.
 - `std` - Enables `std` usage, adding ability to use timestamps (not used in Web and Android)
+- `log` - Enables `log` usage, adding `log` logs to the output.
 
 #### Compile time macros
 

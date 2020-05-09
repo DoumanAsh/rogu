@@ -16,6 +16,7 @@
 //!
 //!- `ufmt` - Enables [ufmt](https://github.com/japaric/ufmt) traits instead of core's `fmt`
 //!- `std` - Enables `std` usage, adding ability to use timestamps (not used in Web and Android)
+//!- `log` - Enables `log` usage, adding `log` logs to the output.
 //!
 //!#### Compile time macros
 //!
@@ -39,6 +40,8 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "log")]
+mod rust_log;
 #[cfg(feature = "std")]
 mod time;
 mod data;
@@ -94,6 +97,11 @@ impl PartialEq for Level {
 pub fn set_level(level: Level) {
     rt::init();
     LEVEL.store(level as u8, Ordering::Relaxed);
+
+    #[cfg(feature = "log")]
+    {
+        rust_log::init(level.into());
+    }
 }
 
 #[inline]

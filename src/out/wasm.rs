@@ -45,22 +45,27 @@ impl Console {
         res
     }
 
+    #[inline(always)]
     pub fn error(location: &'static str) -> Self {
         Self::new(error, data::level::ERROR, location)
     }
 
+    #[inline(always)]
     pub fn warn(location: &'static str) -> Self {
         Self::new(warn, data::level::WARN, location)
     }
 
+    #[inline(always)]
     pub fn info(location: &'static str) -> Self {
         Self::new(info, data::level::INFO, location)
     }
 
+    #[inline(always)]
     pub fn debug(location: &'static str) -> Self {
         Self::new(debug, data::level::DEBUG, location)
     }
 
+    #[inline(always)]
     pub fn trace(location: &'static str) -> Self {
         Self::new(trace, data::level::TRACE, location)
     }

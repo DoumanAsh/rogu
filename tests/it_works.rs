@@ -6,4 +6,10 @@ fn it_works() {
     rogu::info!("info!");
     rogu::debug!("debug!");
     rogu::trace!("trace!");
+
+    #[cfg(feature = "log")]
+    {
+        log::info!("LOG INFO!");
+        log::trace!("LOG INFO!");
+    }
 }
