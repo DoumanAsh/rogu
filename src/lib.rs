@@ -37,9 +37,6 @@
 #![warn(missing_docs)]
 #![no_std]
 
-#[cfg(feature = "std")]
-extern crate std;
-
 #[cfg(feature = "log")]
 mod rust_log;
 #[cfg(feature = "std")]

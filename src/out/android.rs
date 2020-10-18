@@ -26,7 +26,7 @@ extern "C" {
 
 pub struct Log {
     prio: LogPriority,
-    buffer: [u8; MSG_MAX_LEN + 1],
+    buffer: mem::MaybeUninit<[u8; MSG_MAX_LEN + 1]>,
     len: usize,
 }
 
@@ -34,21 +34,31 @@ impl Log {
     fn new(prio: LogPriority, level: &'static str, location: &'static str) -> Self {
         let mut res = Self {
             prio,
-            buffer: unsafe { mem::MaybeUninit::uninit().assume_init() },
+            buffer: mem::MaybeUninit::uninit(),
             len: 0,
         };
 
         unsafe {
-            ptr::copy_nonoverlapping(level.as_ptr(), res.buffer.as_mut_ptr(), level.len())
+            ptr::copy_nonoverlapping(level.as_ptr(), res.as_mut_ptr(), level.len())
         }
         res.len += level.len();
 
         unsafe {
-            ptr::copy_nonoverlapping(location.as_ptr(), res.buffer.as_mut_ptr().add(res.len), location.len())
+            ptr::copy_nonoverlapping(location.as_ptr(), res.as_mut_ptr().add(res.len), location.len())
         }
         res.len += location.len();
 
         res
+    }
+
+    #[inline(always)]
+    fn as_ptr(&self) -> *const u8 {
+        self.buffer.as_ptr() as *const u8
+    }
+
+    #[inline(always)]
+    fn as_mut_ptr(&mut self) -> *mut u8 {
+        self.buffer.as_mut_ptr() as *mut u8
     }
 
     #[inline(always)]
@@ -77,10 +87,9 @@ impl Log {
     }
 
     pub fn flush(&mut self) {
-        self.buffer[self.len - 1] = 0;
-
         unsafe {
-            __android_log_write(self.prio as i32, TAG.as_ptr() as *const _, self.buffer.as_ptr() as *const _);
+            self.as_mut_ptr().add(self.len - 1).write(0);
+            __android_log_write(self.prio as i32, TAG.as_ptr() as *const _, self.as_ptr() as *const _);
         }
 
         self.len = 0;
@@ -96,11 +105,11 @@ impl Log {
         let write_len = cmp::min(MSG_MAX_LEN - self.len, text.len());
 
         unsafe {
-            ptr::copy_nonoverlapping(text.as_ptr(), self.buffer.as_mut_ptr().add(self.len), write_len);
+            ptr::copy_nonoverlapping(text.as_ptr(), self.as_mut_ptr().add(self.len), write_len);
         }
         self.len += write_len;
 
-        if self.buffer[self.len - 1] == b'\n' {
+        if unsafe { *self.as_ptr().add(self.len - 1) } == b'\n' {
             self.flush();
         }
     }

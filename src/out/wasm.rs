@@ -18,9 +18,11 @@ extern "C" {
 
 use crate::data;
 
+const BUFFER_SIZE: usize = 4096;
+
 pub struct Console {
     fun: fn(&str),
-    buffer: [u8; 4096],
+    buffer: mem::MaybeUninit<[u8; BUFFER_SIZE]>,
     len: usize,
 }
 
@@ -28,21 +30,31 @@ impl Console {
     fn new(fun: fn(&str), level: &'static str, location: &'static str) -> Self {
         let mut res = Self {
             fun,
-            buffer: unsafe { mem::MaybeUninit::uninit().assume_init() },
+            buffer: mem::MaybeUninit::uninit(),
             len: 0,
         };
 
         unsafe {
-            ptr::copy_nonoverlapping(level.as_ptr(), res.buffer.as_mut_ptr(), level.len())
+            ptr::copy_nonoverlapping(level.as_ptr(), res.as_mut_ptr(), level.len())
         }
         res.len += level.len();
 
         unsafe {
-            ptr::copy_nonoverlapping(location.as_ptr(), res.buffer.as_mut_ptr().add(res.len), location.len())
+            ptr::copy_nonoverlapping(location.as_ptr(), res.as_mut_ptr().add(res.len), location.len())
         }
         res.len += location.len();
 
         res
+    }
+
+    #[inline(always)]
+    fn as_ptr(&self) -> *const u8 {
+        self.buffer.as_ptr() as *const u8
+    }
+
+    #[inline(always)]
+    fn as_mut_ptr(&mut self) -> *mut u8 {
+        self.buffer.as_mut_ptr() as *mut u8
     }
 
     #[inline(always)]
@@ -72,7 +84,8 @@ impl Console {
 
     pub fn flush(&mut self) {
         let text = unsafe {
-            core::str::from_utf8_unchecked(&self.buffer[..self.len])
+            let buffer = core::slice::from_raw_parts(self.as_ptr(), self.len);
+            core::str::from_utf8_unchecked(buffer)
         };
         (self.fun)(text);
         self.len = 0;
@@ -80,19 +93,19 @@ impl Console {
 
     pub fn write_text(&mut self, text: &str) {
         //Yeah, how about to not write so much actually?
-        debug_assert!(text.len() <= self.buffer.len());
+        debug_assert!(text.len() <= BUFFER_SIZE);
 
-        if self.len == self.buffer.len() || self.len + text.len() > self.buffer.len() {
+        if self.len == BUFFER_SIZE || self.len + text.len() > BUFFER_SIZE {
             self.flush();
         }
 
-        let write_len = cmp::min(self.buffer.len(), text.len());
+        let write_len = cmp::min(BUFFER_SIZE, text.len());
         unsafe {
-            ptr::copy_nonoverlapping(text.as_ptr(), self.buffer.as_mut_ptr().add(self.len), write_len);
+            ptr::copy_nonoverlapping(text.as_ptr(), self.as_mut_ptr().add(self.len), write_len);
         }
         self.len += write_len;
 
-        if self.buffer[self.len - 1] == b'\n' {
+        if unsafe { *self.as_ptr().add(self.len - 1) } == b'\n' {
             self.len -= 1;
             self.flush();
         }

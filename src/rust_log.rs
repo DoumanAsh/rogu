@@ -47,9 +47,7 @@ impl log::Log for Logger {
                 crate::Level::INFO => crate::Out::info(""),
                 crate::Level::DEBUG => crate::Out::debug(""),
                 crate::Level::TRACE => crate::Out::trace(""),
-                _ => unsafe {
-                    core::hint::unreachable_unchecked()
-                }
+                _ => panic!("Unexpected log level"),
             };
 
             #[cfg(not(feature = "ufmt"))]

@@ -15,3 +15,9 @@ mod std_c;
 #[cfg(not(any(all(target_arch = "wasm32", target_os = "unknown"), target_os = "android")))]
 ///Alias to platform logger
 pub type Out = std_c::FdWriter;
+
+#[cfg(all(not(target_arch = "wasm32"), target_os = "unknown"))]
+mod noop;
+#[cfg(all(not(target_arch = "wasm32"), target_os = "unknown"))]
+///Alias to noop logger
+pub type Out = noop::Noop;
