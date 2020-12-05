@@ -39,7 +39,7 @@
 
 #[cfg(feature = "log")]
 mod rust_log;
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(any(all(target_arch = "wasm32", target_os = "unknown"), target_os = "android"))))]
 mod time;
 mod data;
 mod out;

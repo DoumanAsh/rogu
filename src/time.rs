@@ -14,7 +14,7 @@ impl TimeDate {
 
 #[inline(always)]
 pub fn get() -> TimeDate {
-    let now = time::OffsetDateTime::now();
+    let now = time::OffsetDateTime::now_utc();
     let mut buffer = mem::MaybeUninit::<[u8; 22]>::uninit();
     unsafe {
         let buffer_ptr = buffer.as_mut_ptr() as *mut u8;
