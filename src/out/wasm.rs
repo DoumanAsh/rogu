@@ -91,19 +91,37 @@ impl Console {
         self.len = 0;
     }
 
-    pub fn write_text(&mut self, text: &str) {
-        //Yeah, how about to not write so much actually?
-        debug_assert!(text.len() <= BUFFER_SIZE);
-
-        if self.len == BUFFER_SIZE || self.len + text.len() > BUFFER_SIZE {
-            self.flush();
-        }
-
-        let write_len = cmp::min(BUFFER_SIZE, text.len());
+    fn copy_text<'a>(&mut self, text: &'a str) -> &'a str {
+        let write_len = cmp::min(BUFFER_SIZE.saturating_sub(self.len), text.len());
         unsafe {
             ptr::copy_nonoverlapping(text.as_ptr(), self.as_mut_ptr().add(self.len), write_len);
         }
         self.len += write_len;
+        &text[write_len..]
+    }
+
+    #[cold]
+    fn on_text_overflow(&mut self, mut text: &str) {
+        text = self.copy_text(text);
+        self.flush();
+        (self.fun)(text)
+    }
+
+    pub fn write_text(&mut self, mut text: &str) {
+        if text.len() > BUFFER_SIZE {
+            return self.on_text_overflow(text);
+        }
+
+        //At this point text.len() <= BUFFER_CAPACITY
+        loop {
+            text = self.copy_text(text);
+
+            if text.len() == 0 {
+                break;
+            } else {
+                self.flush();
+            }
+        }
 
         if unsafe { *self.as_ptr().add(self.len - 1) } == b'\n' {
             self.len -= 1;

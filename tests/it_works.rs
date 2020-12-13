@@ -2,6 +2,7 @@
 fn it_works() {
     rogu::set_level(rogu::Level::DEBUG);
     rogu::error!("error {}, {}", "sad", "2");
+    rogu::error!("asdjahsdkjsakjdhsakdhas;kfdahf;kjdshgf;kjdsgfhea;kjghfda;kjgrdal;kjghfd;kghrdskjghfdskjghfdskjgdf");
     rogu::warn!("warn!");
     rogu::info!("info!");
     rogu::debug!("debug!");

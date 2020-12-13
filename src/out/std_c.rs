@@ -1,11 +1,13 @@
 ///C stdlib baesd writer into stdout/stderr
 
 use crate::data;
-use core::{mem, ptr};
+use core::{mem, cmp, ptr};
+
+const BUFFER_CAPACITY: usize = 40;
 
 pub struct FdWriter {
     fd: u8,
-    buffer: mem::MaybeUninit<[u8; 4096]>,
+    buffer: mem::MaybeUninit<[u8; BUFFER_CAPACITY]>,
     len: usize,
 }
 
@@ -41,7 +43,7 @@ impl FdWriter {
         res
     }
 
-    fn buffer(&self) -> &[u8; 4096] {
+    fn buffer(&self) -> &[u8; BUFFER_CAPACITY] {
         unsafe {
             &*(self.buffer.as_ptr())
         }
@@ -88,19 +90,42 @@ impl FdWriter {
         self.len = 0;
     }
 
-    fn write_text(&mut self, text: &str) {
-        //Yeah, how about to not write so much actually?
-        debug_assert!(text.len() <= self.buffer().len());
-
-        if self.len == self.buffer().len() || self.len + text.len() > self.buffer().len() {
-            self.flush();
-        }
-
-        let write_len = core::cmp::min(self.buffer().len(), text.len());
+    fn copy_text<'a>(&mut self, text: &'a str) -> &'a str {
+        let write_len = cmp::min(BUFFER_CAPACITY.saturating_sub(self.len), text.len());
         unsafe {
             ptr::copy_nonoverlapping(text.as_ptr(), self.buffer_as_mut_ptr().add(self.len), write_len);
         }
         self.len += write_len;
+        &text[write_len..]
+    }
+
+    #[cold]
+    fn on_text_overflow<'a>(&mut self, mut text: &'a str) -> &'a str {
+        loop {
+            text = self.copy_text(text);
+            self.flush();
+
+            if text.len() <= BUFFER_CAPACITY {
+                break text
+            }
+        }
+    }
+
+    fn write_text(&mut self, mut text: &str) {
+        if text.len() > BUFFER_CAPACITY {
+            self.on_text_overflow(text);
+        }
+
+        //At this point text.len() <= BUFFER_CAPACITY
+        loop {
+            text = self.copy_text(text);
+
+            if text.len() == 0 {
+                break;
+            } else {
+                self.flush();
+            }
+        }
 
         if self.buffer()[self.len - 1] == b'\n' {
             self.flush();
