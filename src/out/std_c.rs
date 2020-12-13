@@ -3,7 +3,7 @@
 use crate::data;
 use core::{mem, cmp, ptr};
 
-const BUFFER_CAPACITY: usize = 40;
+const BUFFER_CAPACITY: usize = 4096;
 
 pub struct FdWriter {
     fd: u8,
