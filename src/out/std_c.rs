@@ -90,6 +90,7 @@ impl FdWriter {
         self.len = 0;
     }
 
+    #[inline]
     fn copy_text<'a>(&mut self, text: &'a str) -> &'a str {
         let write_len = cmp::min(BUFFER_CAPACITY.saturating_sub(self.len), text.len());
         unsafe {
@@ -99,24 +100,7 @@ impl FdWriter {
         &text[write_len..]
     }
 
-    #[cold]
-    fn on_text_overflow<'a>(&mut self, mut text: &'a str) -> &'a str {
-        loop {
-            text = self.copy_text(text);
-            self.flush();
-
-            if text.len() <= BUFFER_CAPACITY {
-                break text
-            }
-        }
-    }
-
     fn write_text(&mut self, mut text: &str) {
-        if text.len() > BUFFER_CAPACITY {
-            self.on_text_overflow(text);
-        }
-
-        //At this point text.len() <= BUFFER_CAPACITY
         loop {
             text = self.copy_text(text);
 

@@ -95,6 +95,7 @@ impl Log {
         self.len = 0;
     }
 
+    #[inline]
     fn copy_text<'a>(&mut self, text: &'a str) -> &'a str {
         let write_len = cmp::min(MSG_MAX_LEN.saturating_sub(self.len), text.len());
         unsafe {
@@ -104,24 +105,7 @@ impl Log {
         &text[write_len..]
     }
 
-    #[cold]
-    fn on_text_overflow<'a>(&mut self, mut text: &'a str) -> &'a str {
-        loop {
-            text = self.copy_text(text);
-            self.flush();
-
-            if text.len() <= MSG_MAX_LEN {
-                break text
-            }
-        }
-    }
-
     pub fn write_text(&mut self, mut text: &str) {
-        //Yeah, how about to not write so much actually?
-        if text.len() > MSG_MAX_LEN {
-            self.on_text_overflow(text);
-        }
-
         loop {
             text = self.copy_text(text);
 
